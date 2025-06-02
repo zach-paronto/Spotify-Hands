@@ -1,8 +1,12 @@
 from selenium import webdriver 
 from selenium.webdriver import Keys, ActionChains
-from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 import time
 #sleep statements added for testing; may remove and replace with another method to ensure functions are not rapidly called
+
+# printv = lambda *a, **k: None #logging module would be a bit much for this
+
 
 class SPController():
     def login(self, username, password):
@@ -17,7 +21,6 @@ class SPController():
 
     def pause_play(self):
         self.player_body.send_keys(" ")
-        time.sleep(1)
 
     #TODO: doesn't work if the web browser is used while a desktop app is playing the song
     #does work in the browser
@@ -39,14 +42,16 @@ class SPController():
             time.sleep(1) 
             new_song = self.driver.find_element("xpath", "/html/body/span").text
         print(current_song + " : " + new_song)
-        time.sleep(1)
 
     def skip(self):
         ActionChains(self.driver).key_down(Keys.CONTROL).key_down(Keys.RIGHT).key_up(Keys.CONTROL).key_up(Keys.RIGHT).perform()
-        time.sleep(1)
 
-
-    def __init__(self, username, password):
-        self.driver = webdriver.Chrome()
+    def __init__(self, verbose, headless, username, password):
+        options = Options()
+        if(headless):
+            options.add_argument("--headless=new")
+        # if(verbose):
+        #     printv = print if verbose else lambda *a, **k: None
+        self.driver = webdriver.Chrome(options=options)
         self.driver.implicitly_wait(10)
         self.login(username, password)
