@@ -7,9 +7,11 @@ from mediapipe.framework.formats import landmark_pb2
 import sp_controller
 import time
 
+printv = lambda *a, **k : None
+
 def draw_landmarks_on_image(rgb_image, hand_landmarks_list: list):
     if hand_landmarks_list == []:
-        print("No landmarks to draw")
+        printv("No landmarks to draw")
         return rgb_image
     else:
         annotated_image = np.copy(rgb_image)
@@ -70,7 +72,7 @@ class recognizer_and_result():
             
             self.gesture_map[name]()
         except Exception as e:
-            print("Error recognizing gesture: \n", e)
+            printv("Error recognizing gesture: \n", e)
     
     def close(self):
         self.gesture_recognizer.close()
@@ -90,23 +92,24 @@ def main():
 
     #TODO: use verbose printing 
     verbose = input("Would you like to run the program with debugging information? y/N: ")
-    # printv = print if verbose == 'y' or verbose == 'Y' else lambda *a, **k: None
+    printv = print if verbose == 'y' or verbose == 'Y' else lambda *a, **k: None
+    sp_controller.printv = printv
 
     headless = input("Would you like to run the program in headless mode? y/N: ")
     headless = True if headless == 'y' or headless == 'Y' else False
 
-    controller = sp_controller.SPController(verbose, headless, un, pw)
+    controller = sp_controller.SPController(headless, un, pw)
 
     gesture_map = {
-        "Unknown"       : lambda : print("Unknown"),
-        "None"          : lambda : print("None"),
+        "Unknown"       : lambda : printv("Unknown"),
+        "None"          : lambda : printv("None"),
         "Closed_Fist"   : controller.pause_play,
-        "Open_Palm"     : lambda : print("Open_Palm"),
-        "Pointing_Up"   : lambda : print("Pointing_Up"),
+        "Open_Palm"     : lambda : printv("Open_Palm"),
+        "Pointing_Up"   : lambda : printv("Pointing_Up"),
         "Thumb_Down"    : controller.rewind,
         "Thumb_Up"      : controller.skip,
-        "Victory"       : lambda : print("Victory"),
-        "ILoveYou"      : lambda : print("ILoveYou")
+        "Victory"       : lambda : printv("Victory"),
+        "ILoveYou"      : lambda : printv("ILoveYou")
     }
     
     try:
@@ -135,7 +138,7 @@ def main():
                 recognizer.result.hand_landmarks
                 landmarks_present = True
             except AttributeError as e:
-                print("landmarks not present on recognizer result")
+                printv("landmarks not present on recognizer result")
                 time.sleep(.5)
 
         while rval:
@@ -144,18 +147,19 @@ def main():
             
             frame = cv2.flip(frame, 1)
             recognizer.detect_async(frame)
+            
+            recognizer.gesture_to_action()
             if(not headless):
                 frame = draw_landmarks_on_image(frame, recognizer.result.hand_landmarks)
-            recognizer.gesture_to_action()
+                cv2.imshow("preview", frame)
             
-            cv2.imshow("preview", frame)
 
             key = cv2.waitKey(1)
             if key == 27:
                 break
             
     except Exception as e:
-        print(e, "closing out...")
+        printv(e, "closing out...")
         
     recognizer.close()
     vc.release()

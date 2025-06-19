@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 import time
 #sleep statements added for testing; may remove and replace with another method to ensure functions are not rapidly called
 
-# printv = lambda *a, **k: None #logging module would be a bit much for this
+printv = lambda *a, **k: None #logging module would be a bit much for this
 
 
 class SPController():
@@ -41,17 +41,15 @@ class SPController():
             # else the loop will rapidly invoke ActionChains, causing undefined behavior 
             time.sleep(1) 
             new_song = self.driver.find_element("xpath", "/html/body/span").text
-        print(current_song + " : " + new_song)
+        printv(current_song + " : " + new_song)
 
     def skip(self):
         ActionChains(self.driver).key_down(Keys.CONTROL).key_down(Keys.RIGHT).key_up(Keys.CONTROL).key_up(Keys.RIGHT).perform()
 
-    def __init__(self, verbose, headless, username, password):
+    def __init__(self, headless, username, password):
         options = Options()
         if(headless):
             options.add_argument("--headless=new")
-        # if(verbose):
-        #     printv = print if verbose else lambda *a, **k: None
         self.driver = webdriver.Chrome(options=options)
         self.driver.implicitly_wait(10)
         self.login(username, password)
